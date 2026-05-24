@@ -1,4 +1,4 @@
-name: memos-CI-CD-Pipeline
+name: memos-deploy-pipeline
 # Display name in GitHub UI
 
 # What triggers the workflow
@@ -11,11 +11,17 @@ permissions:
 
 # What the workflow actualy does
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo # Clones your repo onto the VM that runs this workflow
         uses: actions/checkout@v6
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::310829530244:role/memos_github_role
+          aws-region: eu-west-2
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
