@@ -16,7 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo # Clones your repo onto the VM that runs this workflow
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          submodules: true
 
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
