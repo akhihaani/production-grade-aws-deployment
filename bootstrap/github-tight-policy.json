@@ -213,7 +213,22 @@
 				"elasticloadbalancing:DescribeTargetHealth",
 				"acm:AddTagsToCertificate",
 				"acm:ListTagsForCertificate",
-				"acm:RemoveTagsFromCertificate"
+				"acm:RemoveTagsFromCertificate",
+				"s3:GetBucketWebsite",
+				"s3:GetBucketCORS",
+				"s3:GetBucketObjectLockConfiguration",
+				"s3:GetBucketPolicy",
+				"s3:GetBucketPolicyStatus",
+				"elasticloadbalancing:DescribeTargetGroups",
+				"elasticloadbalancing:DescribeTargetGroupAttributes",
+				"cloudformation:GetResource",
+				"ec2:DescribeVpcs",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DetachInternetGateway",
+				"ec2:DeleteNetworkInterface",
+				"s3express:GetBucketPolicy",
+				"s3:GetLifecycleConfiguration",
+				"s3:GetReplicationConfiguration"
 			],
 			"Resource": "arn:aws:logs:eu-west-2:310829530244:log-group:*"
 		}
