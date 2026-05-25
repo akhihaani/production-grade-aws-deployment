@@ -230,7 +230,12 @@
 				"ec2:DeleteNetworkInterface",
 				"s3express:GetBucketPolicy",
 				"s3:GetLifecycleConfiguration",
-				"s3:GetReplicationConfiguration"
+				"s3:GetReplicationConfiguration",
+				"acm:RequestCertificate",
+				"ec2:AssociateRouteTable",
+				"ec2:DisassociateRouteTable",
+				"ec2:CreateSecurityGroup",
+				"ec2:DeleteSecurityGroup"
 			],
 			"Resource": "arn:aws:logs:eu-west-2:310829530244:log-group:*"
 		}
