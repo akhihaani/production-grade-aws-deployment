@@ -45,7 +45,9 @@
 				"iam:PassRole",
 				"route53:GetHostedZone",
 				"route53:ChangeResourceRecordSets",
-				"route53:ListHostedZones"
+				"route53:ListHostedZones",
+				"route53:ListTagsForResource",
+				"route53:ListTagsForResources"
 			],
 			"Resource": "*"
 		},
