@@ -5,6 +5,7 @@ on:
     branches: [main] # run when someone pushes to main
   pull_request:
     branches: [main] # run on PRs targeting main
+  workflow_dispatch: # manually run from the Github UI
 
 permissions:
   id-token: write    # required for OIDC — lets the workflow request a JWT
