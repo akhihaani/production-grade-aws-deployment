@@ -183,8 +183,39 @@ Healthcheck: 'http://localhost:8081/healthz'
 ## APP Demo Video
 
 # Screenshots
-Once everything is documented, you know exactly what to capture: ECS console, AWS, CI runs, the live site with HTTPS padlock.
 
-Screenshots of successful deployment and app running live on AWS via domain
+## Live Application (HTTPS)
 
-SC of pipeline succeses
+![memos live at https://memos.abuniyyah.uk](documents/website_visit.png)
+
+![HTTPS certificate shown in the browser](documents/domain_certificate.png)
+
+## CI/CD Pipelines
+
+![build.yaml successful run](documents/build.yaml-success.png)
+
+![deploy.yaml successful run](documents/deploy.yaml-success.png)
+
+![destroy.yaml successful run](documents/destroy.yaml-success.png)
+
+## AWS Infrastructure
+
+![ECS cluster](documents/ecs_cluster.png)
+
+![ECS service](documents/ecs_service.png)
+
+![ALB target group (healthy targets)](documents/target_group.png)
+
+![ECR repository](documents/ecr_repo.png)
+
+![Route 53 hosted zone](documents/hosted_zone.png)
+
+![ACM certificate issued](documents/proof_of_certificate_issuance.png)
+
+![CloudWatch log group](documents/cloudwatch_log_group.png)
+
+## Local Container
+
+![Local docker build, run, and curl /healthz returning Service ready.](documents/local_docker_build_run_curl.png)
+
+![memos running locally at http://localhost:8081](documents/local_website.png)
