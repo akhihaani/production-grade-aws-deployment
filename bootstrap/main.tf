@@ -155,9 +155,9 @@ resource "aws_iam_role" "memos_github_role" {
 }
 
 resource "aws_iam_policy" "memos_github_tight_policy" {
-  name   = "memos_github_tight_policy"
+  name = "memos_github_tight_policy"
   policy = templatefile("${path.module}/github-tight-policy.json.tftpl", {
-    region = var.region
+    region     = var.region
     account_id = var.account_id
   })
 }

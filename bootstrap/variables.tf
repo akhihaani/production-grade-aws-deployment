@@ -17,6 +17,6 @@ variable "domain" {
 }
 
 variable "github_repo" {
-  type = string
+  type        = string
   description = "GitHub Repository"
 }

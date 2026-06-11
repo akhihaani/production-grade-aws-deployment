@@ -1,4 +1,4 @@
-domain = "memos.abuniyyah.uk"
-region = "eu-west-2"
-account_id = "310829530244"
+domain      = "memos.abuniyyah.uk"
+region      = "eu-west-2"
+account_id  = "310829530244"
 github_repo = "akhihaani/ecs-project"

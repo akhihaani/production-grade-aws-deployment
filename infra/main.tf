@@ -4,7 +4,7 @@
 module "vpc" {
   source = "./modules/vpc"
 
-  tags = local.tags
+  tags   = local.tags
   region = var.region
 }
 
@@ -14,7 +14,7 @@ module "acm" {
   tags               = local.tags
   memos_alb_dns_name = module.alb.memos_alb_dns_name
   memos_alb_zone_id  = module.alb.memos_alb_zone_id
-  memos_domain = var.domain
+  memos_domain       = var.domain
 }
 
 module "alb" {
@@ -36,7 +36,7 @@ module "ecs" {
   memos_lb_target_group_arn = module.alb.memos_lb_target_group_arn
   memos_ecs_task_sg         = module.vpc.memos_ecs_task_sg
   memos_public_subnets      = module.vpc.memos_public_subnets
-  region = var.region
-  aws_account = var.account_id
-  ecr_repo = var.ecr_repo
+  region                    = var.region
+  aws_account               = var.account_id
+  ecr_repo                  = var.ecr_repo
 }
