@@ -31,29 +31,36 @@ https://memos.abuniyyah.uk
 ## Repository structure
 ```
 .
-├─ dockerfile                 # multi-stage build for the memos image
+├─ dockerfile                          # multi-stage build for the memos image
 ├─ .dockerignore
-├─ memos/                     # app source (git submodule → usememos/memos)
-├─ bootstrap/                 # Scope 1 — applied LOCALLY (foundational state)
-│  ├─ main.tf                 # state bucket, lock table, logs bucket, R53 zone, ECR, OIDC + IAM role
+├─ .gitignore
+├─ .gitmodules                         # pins the memos submodule
+├─ setup.sh                            # one-command port: rewrites the 4 values + sets GitHub Actions vars via gh
+├─ memos/                              # app source (git submodule → usememos/memos)
+├─ bootstrap/                          # Scope 1 — applied LOCALLY (foundational state)
+│  ├─ main.tf                          # state bucket, lock table, logs bucket, R53 zone, ECR, OIDC + IAM role
 │  ├─ provider.tf
+│  ├─ variables.tf
 │  ├─ locals.tf
-│  ├─ outputs.tf              # consumed by infra via terraform_remote_state
-│  └─ github-tight-policy.json
-├─ infra/                     # Scope 2 — applied by CI (app infrastructure)
-│  ├─ backend.tf              # S3 backend + reads bootstrap remote state
-│  ├─ main.tf                 # wires the modules together
+│  ├─ outputs.tf                       # consumed by infra via terraform_remote_state
+│  ├─ terraform.tfvars                 # the 4 portable values (account, region, domain, repo)
+│  ├─ backend.tf.disabled              # S3 backend; renamed to backend.tf after first apply, then state is migrated
+│  └─ github-tight-policy.json.tftpl   # least-privilege IAM policy, rendered via templatefile()
+├─ infra/                              # Scope 2 — applied by CI (app infrastructure)
+│  ├─ backend.tf                       # S3 backend + reads bootstrap remote state
+│  ├─ main.tf                          # wires the modules together
 │  ├─ provider.tf / variables.tf / locals.tf / outputs.tf
+│  ├─ terraform.tfvars
 │  └─ modules/
-│     ├─ vpc/                 # VPC, public subnets, ALB SG + ECS task SG
-│     ├─ alb/                 # ALB, listeners (80→443), target group
-│     ├─ acm/                 # certificate + DNS validation records
-│     └─ ecs/                 # cluster, service, task def, CloudWatch log group
+│     ├─ vpc/                          # VPC, public subnets, ALB SG + ECS task SG
+│     ├─ alb/                          # ALB, listeners (80→443), target group
+│     ├─ acm/                          # certificate + DNS validation records
+│     └─ ecs/                          # cluster, service, task def + task-definition.json (envsubst'd in deploy.yaml)
 ├─ .github/workflows/
-│  ├─ build.yaml              # build & push image to ECR (push/PR/dispatch)
-│  ├─ deploy.yaml             # tf fmt/validate/tflint/apply → deploy to ECS → healthcheck (dispatch)
-│  └─ destroy.yaml            # terraform destroy (dispatch)
-├─ documents/                 # architecture diagrams (scope 1 + scope 2)
+│  ├─ build.yaml                       # build & push image to ECR (push/PR/dispatch)
+│  ├─ deploy.yaml                      # tf fmt/validate/tflint/apply → render task def → deploy to ECS → healthcheck (dispatch)
+│  └─ destroy.yaml                     # terraform destroy (dispatch)
+├─ documents/                          # architecture diagrams + deployment screenshots
 └─ README.md
 ```
 
