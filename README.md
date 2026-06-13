@@ -1,32 +1,58 @@
+# Table of Contents
+- [Project Overview](#project-overview)
+  - [Repository structure](#repository-structure)
+- [Architecture Diagram](#architecture-diagram)
+- [Reproduction Instructions](#reproduction-instructions)
+  - [Cloud Set-Up](#cloud-set-up)
+  - [Local Set-Up](#local-set-up)
+- [Screenshots](#screenshots)
+- [Security](#security)
+- [Challenges](#challenges)
+
 # Project Overview
-this project takes an app called memos and hosts it on Amazon ECS which can be reached publicly on the internet through HTTPS
+This project takes an app called memos and hosts it on Amazon ECS which can be reached publicly on the internet through HTTPS
 The project is split into two scopes: Bootstrap and Infra
+
+It demonstrates a production-style, fully IaC + CI/CD Deployment
 
 **Bootstrap (+build.yaml)**:
 
 Applied locally:
 - Creates an s3 bucket and dynamodb lock table which are both used for handling terraform state
+- State is migrated to remote during bootstrap process
 - An IAM role is created for GitHub Actions to use for OIDC (avoids static AWS keys)
 - Another S3 bucket is created for collecting logs for the ALB
 - The ECR Repository
 - The Route 53 hosted zone
 
 CI/CD:
-- A docker image of the app is created and pushed to Amazon ECR using a Github actions workflow (upon pushing to github)
+- A docker image of the app is created and pushed to Amazon ECR using a GitHub actions workflow (upon pushing to github)
+- Made from multi-stage dockerfile
 
 **Infra**:
-- Using a manual github actions workflow, we create infrastructure using terraform onto AWS
+- Using a manual GitHub actions workflow, we create infrastructure using terraform onto AWS
 - The terraform infrastructure is split across modules to handle everything separately
 - This includes creating a network for this application
-- The app is hosted on ECS Tasks within the network
+- The app is hosted on ECS Fargate Tasks within the network
 - An ALB is used to route incoming traffic to the ECS tasks
 - And Amazon cert manager is used to secure the domain for HTTPS
 - and a subdomain is delegated to route 53 from cloudflare and used for the ECS task
 
-When the app infrastructure is deployed, the memos app is available at:
-```
-https://memos.abuniyyah.uk
-```
+**Portability**:
+- For anyone forking my repository to have an easier time porting to their values
+- I made a BASH script that takes 4 values needed for the project and places them in all the files that need them
+- It also sets those values as GitHub actions variables for the workflows
+- That includes: AWS Account ID, AWS Region, Github Repo name, Domain
+- Easily reproducible, provided the user has an AWS account, GitHub Account, and domain
+
+**Stack**:
+- Multi-Stage Dockerfile
+- Terraform Modules + Remote State
+- ECS Fargate
+- ALB
+- ACM
+- Route 53
+- Github Actions w/OIDC
 
 ## Repository structure
 ```
@@ -66,18 +92,17 @@ https://memos.abuniyyah.uk
 
 # Architecture Diagram
 
-### Scope 1 — Bootstrap
+## Scope 1 — Bootstrap
 ![Bootstrap architecture: state bucket, lock table, ECR, Route53 zone, OIDC role](documents/memos-arch-diagram-scope1.png)
 
-### Scope 2 — Infrastructure
+## Scope 2 — Infrastructure
 ![Infrastructure architecture: VPC, ALB, ECS Fargate, ACM, DNS flow](documents/memos-architecture-scope2.png)
 
 
 # Reproduction Instructions
-the dense part. Walk through bootstrap → NS records in Cloudflare → infra apply → CI/CD.
 
 ## Cloud Set-Up
-**Pre-Requisities**:
+**Pre-Requisites**:
 First you need to have an AWS account and you need to configure it to your local Command Line Interface.
 
 CLI configuration:
@@ -96,8 +121,8 @@ Domain:
 You also need to own a domain
 Go to any domain registrar, such as cloudflare, and purchase a domain.
 
-Github Repository:
-Fork the github repository and pull it to your working folder
+GitHub Repository:
+Fork the GitHub repository and pull it to your working folder
 
 Use:
 ```
@@ -144,11 +169,11 @@ git push origin main
 This will activate the build.yaml workflow
 which will create a docker image and push it to Amazon ECR
 
-The workflow can also be activated manually in the github actions menu
+The workflow can also be activated manually in the GitHub actions menu
 build.yaml must be run and completed before using deploy.yaml
 
 **deploy.yaml**:
-In the github actions menu, activate deploy.yaml
+In the GitHub actions menu, activate deploy.yaml
 This can only be done manually
 
 Certificate validation can take 10-15 minutes, so you will need to wait
@@ -164,16 +189,18 @@ gh workflow run destroy.yaml
 You can also monitor your workflows from the terminal using:
 ```
 gh run list
-# See recent runts + their status
+# See recent runs + their status
 gh run watch
 # live-follow the latest run until it finishes
-gh run view view --log
+gh run view --log
 # Full logs of a run
 ```
 
 **verify**:
+```
 Visit [https://<domain-name>] and check if it is working
 [https://<domain-name>/healthz] can be used for health status checking
+```
 
 ## Local Set-Up
 Open docker engine
@@ -186,8 +213,6 @@ docker run --rm --name memos -p 8081:8081 -v ~/.memos:/var/opt/memos memos
 
 Visit 'http://localhost:8081' to use your container
 Healthcheck: 'http://localhost:8081/healthz'
-
-## APP Demo Video
 
 # Screenshots
 
@@ -226,3 +251,31 @@ Healthcheck: 'http://localhost:8081/healthz'
 ![Local docker build, run, and curl /healthz returning Service ready.](documents/local_docker_build_run_curl.png)
 
 ![memos running locally at http://localhost:8081](documents/local_website.png)
+
+# Security
+
+- OIDC, no static keys in CI; trust scoped to the main branch
+- Least-privilege IAM (tight policy, not AdministratorAccess)
+- Non-root container + minimal binary permissions
+- Security groups as explicit boundaries (ALB SG → task SG only)
+- Encrypted remote state + S3 public access blocked + state locking
+- HTTPS via ACM with HTTP > HTTPS redirect
+
+# Challenges
+- /health endpoint was not working, after doing some digging in the app code, I found /healthz as the real endpoint
+  This was because the /health endpoint was gRPC instead of HTTP
+
+- Shrinked the image size down from 234mb to 88mb.
+  What was going wrong was that the next layer would copy from the previous, doubling the size
+  I also adjusted the dockerfile to include CGO_ENABLED=0 so that it can run on alpine since the container wasn't running
+  and added [-ldflags="-s -w"] which stripped the symbol table that debuggers use, shrinking the image further
+
+- I had a typo in my dockerfile between -o/-O in my healthcheck and this caused an 'unhealthy targets' error that I spent hours on
+
+- When creating the CI/CD workflows I realised that bootstrap state needed to be migrated remotely for it to work
+  since the VM running the workflows did not have access to my bootstrap
+  So I added an S3 backend to bootstrap and migrated state remotely then pointed infra's remote_state at S3 instead of local
+
+- Made a custom IAM policy for the GitHub actions account
+  first used adminAccess to test the workflows and used CloudTrail to see which permissions were needed
+  I generated a policy from cloudtrail and then scoped it down to specific ARNs
