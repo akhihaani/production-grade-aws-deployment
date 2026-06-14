@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# --- 1. Ask the porter for their 4 values ---
-read -rp "AWS account ID: " ACCOUNT_ID
-read -rp "AWS region (e.g. eu-west-2): " REGION
-read -rp "Domain (e.g. memos.example.com): " DOMAIN
-read -rp "GitHub repo (owner/repo): " REPO
+# --- 1. The author's CURRENT values ---
+TFVARS=bootstrap/terraform.tfvars
+OLD_ACCOUNT=$(grep -E '^account_id[[:space:]]*='  "$TFVARS" | cut -d'"' -f2)
+OLD_REGION=$(grep -E  '^region[[:space:]]*='      "$TFVARS" | cut -d'"' -f2)
+OLD_DOMAIN=$(grep -E  '^domain[[:space:]]*='      "$TFVARS" | cut -d'"' -f2)
+OLD_REPO=$(grep -E    '^github_repo[[:space:]]*=' "$TFVARS" | cut -d'"' -f2)
 
-# --- 2. The author's CURRENT values ---
-OLD_ACCOUNT="310829530244"
-OLD_REGION="eu-west-2"
-OLD_DOMAIN="memos.abuniyyah.uk"
-OLD_REPO="akhihaani/ecs-project"
+# --- 2. Ask the porter for their 4 values ---
+read -rp "AWS account ID [$OLD_ACCOUNT]: " ACCOUNT_ID
+ACCOUNT_ID="${ACCOUNT_ID:-$OLD_ACCOUNT}"
+
+read -rp "AWS region [$OLD_REGION]: " REGION
+REGION="${REGION:-$OLD_REGION}"
+
+read -rp "Domain [$OLD_DOMAIN]: " DOMAIN
+DOMAIN="${DOMAIN:-$OLD_DOMAIN}"
+
+read -rp "GitHub repo (owner/repo) [$OLD_REPO]: " REPO
+REPO="${REPO:-$OLD_REPO}"
 
 # --- 3. Files that contain those literals ---
 FILES=(
@@ -19,6 +27,7 @@ FILES=(
   infra/terraform.tfvars
   bootstrap/backend.tf.disabled
   infra/backend.tf
+  dockerfile
 )
 
 # --- 4. Swap old -> new in each file ---
