@@ -132,6 +132,12 @@ GitHub Repository:
 Create a fork of the GitHub repository
 Use the 'Fork' button on the top right of the repository page
 
+Get these values:
+```
+<your-fork-url> Example: https://github.com/akhihaani/memos-project
+<your-fork> Example: akhihaani/memos-project
+```
+
 Then pull the repo to your local machine with:
 ```
 git clone --recurse-submodules <your-fork-url>
@@ -213,6 +219,19 @@ gh run view --log
 Visit [https://<domain-name>] and check if it is working
 [https://<domain-name>/healthz] can be used for health status checking
 ```
+
+**Destroy**:
+When you are finished with the WHOLE project, use this:
+```
+gh workflow run destroy.yaml
+gh run watch                    # Wait until destroy workflow finishes
+cd bootstrap
+terraform destroy -auto-approve
+cd ../..
+rm -rf <repo-name>
+```
+
+Also remove the 4 NS Records you added to your domain on your domain registrar
 
 ## Local Set-Up
 Open docker engine
