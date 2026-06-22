@@ -31,7 +31,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Tag Docker image
-        run: docker build -t ${{ vars.ECR_REPO }}:${{ github.sha }} -f dockerfile ./memos
+        run: docker build -t ${{ vars.ECR_REPO }}:${{ github.sha }} -f Dockerfile ./memos
 
       - name: Push image to ECR
         run: docker push ${{ vars.ECR_REPO }}:${{ github.sha }}

@@ -27,7 +27,7 @@ FILES=(
   infra/terraform.tfvars
   bootstrap/backend.tf.disabled
   infra/backend.tf
-  dockerfile
+  Dockerfile
 )
 
 # --- 4. Swap old -> new in each file ---
