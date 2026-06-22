@@ -35,3 +35,31 @@ jobs:
 
       - name: Push image to ECR
         run: docker push ${{ vars.ECR_REPO }}:${{ github.sha }}
+
+      - name: ECR image scan results
+        env:
+          ECR_REPO: ${{ vars.ECR_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          REPO_NAME="${ECR_REPO##*/}"
+          aws ecr wait image-scan-complete \
+            --repository-name "$REPO_NAME" \
+            --image-id imageTag="$IMAGE_TAG"
+          {
+            echo "## ECR image scan - \`$IMAGE_TAG\`"
+            echo ""
+            echo "**Severity counts**"
+            echo '```'
+            aws ecr describe-image-scan-findings \
+              --repository-name "$REPO_NAME" \
+              --image-id imageTag="$IMAGE_TAG" \
+              --query 'imageScanFindings.findingSeverityCounts' --output table
+            echo '```'
+            echo "**Findings**"
+            echo '```'
+            aws ecr describe-image-scan-findings \
+              --repository-name "$REPO_NAME" \
+              --image-id imageTag="$IMAGE_TAG" \
+              --query 'imageScanFindings.findings[].{CVE:name,Severity:severity}' --output table
+            echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
