@@ -42,9 +42,14 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           REPO_NAME="${ECR_REPO##*/}"
-          aws ecr wait image-scan-complete \
-            --repository-name "$REPO_NAME" \
-            --image-id imageTag="$IMAGE_TAG"
+          for attempt in {1..12}; do
+            if aws ecr wait image-scan-complete \
+                --repository-name "$REPO_NAME" --image-id imageTag="$IMAGE_TAG" 2>/dev/null; then
+              break
+            fi
+            echo "Scan not ready yet (attempt $attempt); waiting 10s..."
+            sleep 10
+          done
           {
             echo "## ECR image scan - \`$IMAGE_TAG\`"
             echo ""
