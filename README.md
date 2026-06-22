@@ -291,6 +291,7 @@ Healthcheck: 'http://localhost:8081/healthz'
 - Security groups as explicit boundaries (ALB SG → task SG only)
 - Encrypted remote state + S3 public access blocked + state locking
 - HTTPS via ACM with HTTP > HTTPS redirect
+- ECR Basic Image Scanning (No Trivy due to it being compromised in March)
 
 # Challenges
 - /health endpoint was not working, after doing some digging in the app code, I found /healthz as the real endpoint
