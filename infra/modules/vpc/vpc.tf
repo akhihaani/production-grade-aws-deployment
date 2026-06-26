@@ -1,5 +1,3 @@
-# - Security groups, SSM parameters if needed
-
 # VPC
 
 resource "aws_vpc" "memos_vpc" {
