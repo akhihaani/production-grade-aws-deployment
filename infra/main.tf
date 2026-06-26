@@ -1,6 +1,3 @@
-# Variables Inputs
-## Sends variables into the module from outputs outside of that module
-
 module "vpc" {
   source = "./modules/vpc"
 
